@@ -1,0 +1,129 @@
+<!DOCTYPE html>
+<html lang="he" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <title>שעון מילים עברי - Hebrew Word Clock</title>
+    
+    <!-- PWA Manifest -->
+    <link rel="manifest" href="manifest.json">
+    
+    <!-- Mobile App Meta Tags -->
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="שעון עברי">
+    <meta name="mobile-web-app-capable" content="yes">
+    <meta name="theme-color" content="#4a90e2">
+    
+    <!-- App Icons -->
+    <link rel="apple-touch-icon" href="icon-192.png">
+    <link rel="icon" type="image/png" sizes="192x192" href="icon-192.png">
+    <link rel="icon" type="image/png" sizes="512x512" href="icon-512.png">
+    
+    <link rel="stylesheet" href="styles.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Frank+Ruhl+Libre:wght@400;700&display=swap" rel="stylesheet">
+</head>
+<body>
+    <div class="container">
+        <div class="clock-wrapper">
+            <div id="hebrewClock" class="hebrew-time"></div>
+            <div id="digitalTime" class="digital-time"></div>
+        </div>
+        
+        <button id="installButton" class="install-button" style="display: none;">
+            <span class="install-icon">📱</span>
+            <span class="install-text">הורד אפליקציה</span>
+        </button>
+        
+        <button id="themeToggle" class="theme-toggle" aria-label="Toggle theme">
+            <span class="theme-icon">🌙</span>
+        </button>
+    </div>
+    
+    <script src="script.js"></script>
+    <script>
+        let deferredPrompt;
+        const installButton = document.getElementById('installButton');
+        
+        // Check if app is running in standalone mode (installed)
+        function isAppInstalled() {
+            return window.matchMedia('(display-mode: standalone)').matches || 
+                   window.navigator.standalone === true ||
+                   document.referrer.includes('android-app://');
+        }
+        
+        // Hide install button if app is already installed
+        if (isAppInstalled()) {
+            installButton.style.display = 'none';
+        }
+        
+        // Capture the beforeinstallprompt event
+        window.addEventListener('beforeinstallprompt', (e) => {
+            // Don't show if already installed
+            if (isAppInstalled()) return;
+            
+            // Prevent the mini-infobar from appearing on mobile
+            e.preventDefault();
+            // Stash the event so it can be triggered later
+            deferredPrompt = e;
+            // Show the install button
+            installButton.style.display = 'flex';
+        });
+        
+        // Handle install button click
+        installButton.addEventListener('click', async () => {
+            if (deferredPrompt) {
+                // Show the install prompt
+                deferredPrompt.prompt();
+                // Wait for the user to respond to the prompt
+                const { outcome } = await deferredPrompt.userChoice;
+                console.log(`User response to the install prompt: ${outcome}`);
+                // Clear the deferredPrompt so it can only be used once
+                deferredPrompt = null;
+                // Hide the install button
+                installButton.style.display = 'none';
+            } else {
+                // For iOS Safari, show instructions
+                const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent) && !window.MSStream;
+                if (isIOS) {
+                    alert('להתקנה:\n1. לחץ על כפתור השיתוף ↑\n2. גלול למטה ובחר "הוסף למסך הבית"');
+                }
+            }
+        });
+        
+        // Hide button if app gets installed
+        window.addEventListener('appinstalled', () => {
+            installButton.style.display = 'none';
+            console.log('PWA was installed');
+        });
+        
+        // Show button on iOS only if NOT installed
+        const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent) && !window.MSStream;
+        if (isIOS && !isAppInstalled()) {
+            installButton.style.display = 'flex';
+        }
+        
+        // Listen for display mode changes
+        window.matchMedia('(display-mode: standalone)').addListener((e) => {
+            if (e.matches) {
+                installButton.style.display = 'none';
+            }
+        });
+        
+        // Register Service Worker for PWA
+        if ('serviceWorker' in navigator) {
+            window.addEventListener('load', () => {
+                navigator.serviceWorker.register('/service-worker.js')
+                    .then((registration) => {
+                        console.log('Service Worker registered successfully:', registration.scope);
+                    })
+                    .catch((error) => {
+                        console.log('Service Worker registration failed:', error);
+                    });
+            });
+        }
+    </script>
+</body>
+</html>

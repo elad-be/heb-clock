@@ -1,0 +1,178 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>Icon Generator - Hebrew Clock</title>
+    <style>
+        body {
+            font-family: sans-serif;
+            padding: 20px;
+            background: #f0f0f0;
+        }
+        .icon-container {
+            display: flex;
+            gap: 20px;
+            flex-wrap: wrap;
+        }
+        .icon-box {
+            text-align: center;
+        }
+        canvas {
+            border: 1px solid #ccc;
+            background: white;
+            border-radius: 20%;
+        }
+        button {
+            margin-top: 10px;
+            padding: 10px 20px;
+            background: #0071e3;
+            color: white;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+        }
+        button:hover {
+            background: #0077ed;
+        }
+    </style>
+</head>
+<body>
+    <h1>Hebrew Clock App Icons Generator</h1>
+    <p>Click the buttons below to download app icons:</p>
+    
+    <div class="icon-container">
+        <div class="icon-box">
+            <h3>192x192</h3>
+            <canvas id="icon192" width="192" height="192"></canvas>
+            <br>
+            <button onclick="downloadIcon('icon192', 'icon-192.png')">Download</button>
+        </div>
+        
+        <div class="icon-box">
+            <h3>512x512</h3>
+            <canvas id="icon512" width="512" height="512"></canvas>
+            <br>
+            <button onclick="downloadIcon('icon512', 'icon-512.png')">Download</button>
+        </div>
+    </div>
+
+    <script>
+        function drawIcon(canvasId) {
+            const canvas = document.getElementById(canvasId);
+            const ctx = canvas.getContext('2d');
+            const size = canvas.width;
+            const centerX = size / 2;
+            const centerY = size / 2;
+            
+            // White background
+            ctx.fillStyle = 'white';
+            ctx.fillRect(0, 0, size, size);
+            
+            // Clock circle outline (black)
+            const clockRadius = size * 0.32;
+            ctx.strokeStyle = 'black';
+            ctx.lineWidth = size * 0.04;
+            ctx.beginPath();
+            ctx.arc(centerX, centerY * 0.88, clockRadius, 0, Math.PI * 2);
+            ctx.stroke();
+            
+            // Draw 12 niqqud signs as hour markers
+            const niqqudSigns = ['ַ', 'ָ', 'ֶ', 'ֵ', 'ִ', 'ֹ', 'ֻ', 'ּ', 'ְ', 'ֱ', 'ֲ', 'ֳ'];
+            ctx.fillStyle = 'black';
+            ctx.textAlign = 'center';
+            ctx.textBaseline = 'middle';
+            const niqqudSize = size * 0.08;
+            ctx.font = `${niqqudSize}px "Frank Ruhl Libre", "Times New Roman", serif`;
+            
+            for (let i = 0; i < 12; i++) {
+                const angle = (i * 30 - 90) * Math.PI / 180;
+                const markerRadius = clockRadius - size * 0.09;
+                
+                const x = centerX + Math.cos(angle) * markerRadius;
+                const y = centerY * 0.88 + Math.sin(angle) * markerRadius;
+                
+                ctx.fillText(niqqudSigns[i], x, y);
+            }
+            
+            // Draw clock hands showing 10:10 (classic watch position)
+            // Hour hand (pointing to 10)
+            const hourAngle = ((10 * 30) + (10 * 0.5) - 90) * Math.PI / 180;
+            const hourHandLength = clockRadius * 0.5;
+            ctx.lineWidth = size * 0.025;
+            ctx.lineCap = 'round';
+            ctx.beginPath();
+            ctx.moveTo(centerX, centerY * 0.88);
+            ctx.lineTo(
+                centerX + Math.cos(hourAngle) * hourHandLength,
+                centerY * 0.88 + Math.sin(hourAngle) * hourHandLength
+            );
+            ctx.stroke();
+            
+            // Minute hand (pointing to 2 = 10 minutes)
+            const minuteAngle = ((10 * 6) - 90) * Math.PI / 180;
+            const minuteHandLength = clockRadius * 0.7;
+            ctx.lineWidth = size * 0.02;
+            ctx.beginPath();
+            ctx.moveTo(centerX, centerY * 0.88);
+            ctx.lineTo(
+                centerX + Math.cos(minuteAngle) * minuteHandLength,
+                centerY * 0.88 + Math.sin(minuteAngle) * minuteHandLength
+            );
+            ctx.stroke();
+            
+            // Center dot
+            ctx.fillStyle = 'black';
+            ctx.beginPath();
+            ctx.arc(centerX, centerY * 0.88, size * 0.02, 0, Math.PI * 2);
+            ctx.fill();
+            
+            // Hebrew text with niqqud below the clock
+            ctx.fillStyle = 'black';
+            ctx.textAlign = 'center';
+            ctx.textBaseline = 'middle';
+            
+            // Load and use a font that supports niqqud
+            const fontSize = size * 0.14;
+            ctx.font = `bold ${fontSize}px "Frank Ruhl Libre", "Times New Roman", serif`;
+            
+            // Draw "שָׁעוֹן" (clock with niqqud)
+            const textY = centerY * 0.88 + clockRadius + size * 0.14;
+            ctx.fillText('שָׁעוֹן', centerX, textY);
+            
+            // Optional: Add rounded corners by clipping
+            // This creates the typical rounded square app icon shape
+            const cornerRadius = size * 0.15;
+            ctx.globalCompositeOperation = 'destination-in';
+            ctx.beginPath();
+            ctx.moveTo(cornerRadius, 0);
+            ctx.lineTo(size - cornerRadius, 0);
+            ctx.quadraticCurveTo(size, 0, size, cornerRadius);
+            ctx.lineTo(size, size - cornerRadius);
+            ctx.quadraticCurveTo(size, size, size - cornerRadius, size);
+            ctx.lineTo(cornerRadius, size);
+            ctx.quadraticCurveTo(0, size, 0, size - cornerRadius);
+            ctx.lineTo(0, cornerRadius);
+            ctx.quadraticCurveTo(0, 0, cornerRadius, 0);
+            ctx.closePath();
+            ctx.fill();
+        }
+        
+        function downloadIcon(canvasId, filename) {
+            const canvas = document.getElementById(canvasId);
+            const link = document.createElement('a');
+            link.download = filename;
+            link.href = canvas.toDataURL('image/png');
+            link.click();
+        }
+        
+        // Draw icons on page load
+        window.addEventListener('load', () => {
+            // Wait a bit for fonts to load
+            setTimeout(() => {
+                drawIcon('icon192');
+                drawIcon('icon512');
+            }, 100);
+        });
+    </script>
+</body>
+</html>
