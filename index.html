@@ -74,6 +74,28 @@
         
         // Handle install button click
         installButton.addEventListener('click', async () => {
+            // Detect iOS
+            const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent) && !window.MSStream;
+            
+            // Detect Chrome on iOS
+            const isChrome = /CriOS/.test(navigator.userAgent);
+            
+            // If iOS Chrome, redirect to Safari
+            if (isIOS && isChrome) {
+                const currentUrl = window.location.href;
+                // Show alert with instructions
+                if (confirm('להתקנת האפליקציה, יש לפתוח בסאפרי.\n\nלחץ OK כדי להעתיק את הקישור ולפתוח בסאפרי.')) {
+                    // Copy URL to clipboard
+                    navigator.clipboard.writeText(currentUrl).then(() => {
+                        // Try to open in Safari (iOS will prompt)
+                        window.location.href = currentUrl.replace(/^https?:\/\//, 'x-web-search://');
+                    }).catch(() => {
+                        alert('העתק את הכתובת ופתח בסאפרי:\n' + currentUrl);
+                    });
+                }
+                return;
+            }
+            
             if (deferredPrompt) {
                 // Show the install prompt
                 deferredPrompt.prompt();
@@ -86,7 +108,6 @@
                 installButton.style.display = 'none';
             } else {
                 // For iOS Safari, show instructions
-                const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent) && !window.MSStream;
                 if (isIOS) {
                     alert('להתקנה:\n1. לחץ על כפתור השיתוף ↑\n2. גלול למטה ובחר "הוסף למסך הבית"');
                 }
