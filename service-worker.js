@@ -1,12 +1,12 @@
 // Service Worker for Hebrew Word Clock PWA
-const CACHE_NAME = 'hebrew-word-clock-v1';
+const CACHE_NAME = 'heb-clock-v2';
 const urlsToCache = [
-  './',
-  './index.html',
-  './styles.css',
-  './script.js',
-  './icon-192.png',
-  './icon-512.png',
+  '/heb-clock/',
+  '/heb-clock/index.html',
+  '/heb-clock/styles.css',
+  '/heb-clock/script.js',
+  '/heb-clock/icon-192.png',
+  '/heb-clock/icon-512.png',
   'https://fonts.googleapis.com/css2?family=Frank+Ruhl+Libre:wght@400;700&display=swap'
 ];
 
@@ -39,13 +39,13 @@ self.addEventListener('fetch', (event) => {
 
 // Activate event - clean up old caches
 self.addEventListener('activate', (event) => {
-  const cacheWhitelist = ['hebrew-word-clock-v1'];
+  const cacheWhitelist = ['heb-clock-v2'];
   event.waitUntil(
     caches.keys().then((cacheNames) => {
       return Promise.all(
         cacheNames.map((cacheName) => {
           // Only delete caches that belong to this app
-          if (cacheName.startsWith('hebrew-') && cacheWhitelist.indexOf(cacheName) === -1) {
+          if (cacheName.startsWith('heb-clock-') && cacheWhitelist.indexOf(cacheName) === -1) {
             return caches.delete(cacheName);
           }
         })
