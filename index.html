@@ -82,16 +82,59 @@
             
             // If iOS Chrome, redirect to Safari
             if (isIOS && isChrome) {
-                const currentUrl = window.location.href;
-                // Show alert with instructions
-                if (confirm('להתקנת האפליקציה, יש לפתוח בסאפרי.\n\nלחץ OK כדי להעתיק את הקישור ולפתוח בסאפרי.')) {
-                    // Copy URL to clipboard
-                    navigator.clipboard.writeText(currentUrl).then(() => {
-                        // Try to open in Safari (iOS will prompt)
-                        window.location.href = currentUrl.replace(/^https?:\/\//, 'x-web-search://');
-                    }).catch(() => {
-                        alert('העתק את הכתובת ופתח בסאפרי:\n' + currentUrl);
-                    });
+                if (confirm('אפליקציה זו זמינה רק בסאפרי.\n\nלחץ OK לפתיחה בסאפרי.')) {
+                    // Try to open directly in Safari using URL scheme
+                    const currentUrl = window.location.href;
+                    const safariUrl = currentUrl.replace('https://', 'safari-https://').replace('http://', 'safari-http://');
+                    
+                    // Attempt to open in Safari
+                    window.location.href = safariUrl;
+                    
+                    // Fallback: Show instructions after a short delay
+                    setTimeout(() => {
+                        // Copy URL to clipboard as backup
+                        navigator.clipboard.writeText(currentUrl);
+                        
+                        // Create overlay with instructions
+                        const overlay = document.createElement('div');
+                        overlay.style.cssText = `
+                            position: fixed;
+                            top: 0;
+                            left: 0;
+                            right: 0;
+                            bottom: 0;
+                            background: rgba(0,0,0,0.95);
+                            color: white;
+                            display: flex;
+                            flex-direction: column;
+                            justify-content: center;
+                            align-items: center;
+                            padding: 2rem;
+                            z-index: 10000;
+                            font-family: 'Frank Ruhl Libre', sans-serif;
+                            text-align: center;
+                        `;
+                        overlay.innerHTML = `
+                            <div style="font-size: 3rem; margin-bottom: 2rem;">🌐</div>
+                            <h2 style="font-size: 1.5rem; margin-bottom: 1rem;">פתח בסאפרי</h2>
+                            <p style="font-size: 1.1rem; line-height: 1.6; margin-bottom: 2rem;">
+                                1. לחץ על הכפתור למטה<br>
+                                2. לחץ ארוך על שורת הכתובת<br>
+                                3. בחר "פתח בסאפרי"
+                            </p>
+                            <button onclick="this.parentElement.remove()" style="
+                                background: #4a90e2;
+                                color: white;
+                                border: none;
+                                padding: 1rem 3rem;
+                                font-size: 1.2rem;
+                                border-radius: 50px;
+                                cursor: pointer;
+                                font-family: 'Frank Ruhl Libre', sans-serif;
+                            ">הבנתי</button>
+                        `;
+                        document.body.appendChild(overlay);
+                    }, 500);
                 }
                 return;
             }
